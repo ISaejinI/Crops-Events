@@ -27,12 +27,13 @@ class EventPostType
             'labels' => $labels,
             'description' => __('Gérer les événements de votre association avec Crops Events.', 'crops-events'),
             'public' => true,
-            'rewrite' => ['slug' => 'evenement'],
+            'rewrite' => ['slug' => self::POST_TYPE],
             'has_archive' => true,
             'show_in_menu' => true,
+            'show_in_rest' => true,
             'menu_position' => 5,
             'menu_icon' => 'dashicons-calendar-alt',
-            'supports' => ['title', 'editor', 'thumbnail'],
+            'supports' => ['title', 'thumbnail'],
         ];
 
         register_post_type(self::POST_TYPE, $args);
