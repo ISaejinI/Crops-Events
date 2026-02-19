@@ -19,17 +19,22 @@ if ( ! function_exists('acf_add_local_field_group') ) {
         echo __('Crops Events nécessite le plugin Advanced Custom Fields (version gratuite) pour fonctionner.', 'crops-events');
         echo '</p></div>';
     });
-    exit();
 };
 
 require_once plugin_dir_path(__FILE__) . 'inc/EventPostType.php';
 require_once plugin_dir_path(__FILE__) . 'inc/EventTaxonomy.php';
 require_once plugin_dir_path(__FILE__) . 'inc/EventFields.php';
+require_once plugin_dir_path(__FILE__) . 'inc/EventRegisterTable.php';
 
 use CropsEvents\EventPostType;
 use CropsEvents\EventTaxonomy;
 use CropsEvents\EventFields;
+use CropsEvents\EventRegisterTable;
 
 (new EventPostType())->register();
 (new EventTaxonomy())->register();
 (new EventFields())->register();
+
+register_activation_hook(__FILE__, function() {
+    (new EventRegisterTable())->createTable();
+});
