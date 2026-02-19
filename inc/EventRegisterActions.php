@@ -90,4 +90,50 @@ class EventRegisterActions
         
         return $wpdb->get_col($request);
     }
+
+
+    public function registerHandler()
+    {
+        if (! is_user_logged_in()){
+            wp_die(__('Vous devez être connecté pour vous inscrire à un événement.', 'crops-events'));
+        }
+
+        $event_id = isset($_GET['event_id']) ? intval($_GET['event_id']) : 0;
+        if (! $event_id) {
+            wp_die(__('ID de l\'événement invalide.', 'crops-events'));
+        }
+
+        check_admin_referer('crops_events_register_' . $event_id);
+
+        $this->register_user($event_id, get_current_user_id());
+
+        wp_safe_redirect(get_permalink($event_id));
+        exit;
+    }
+
+    public function unregisterHandler()
+    {
+        if (! is_user_logged_in()){
+            wp_die(__('Vous devez être connecté pour vous désinscrire d\'un événement.', 'crops-events'));
+        }
+
+        $event_id = isset($_GET['event_id']) ? intval($_GET['event_id']) : 0;
+        if (! $event_id) {
+            wp_die(__('ID de l\'événement invalide.', 'crops-events'));
+        }
+
+        check_admin_referer('crops_events_unregister_' . $event_id);
+
+        $this->unregister_user($event_id, get_current_user_id());
+
+        wp_safe_redirect(get_permalink($event_id));
+        exit;
+    }
+
+
+    public function registerHandlers()
+    {
+        add_action('admin_post_crops_events_register', [$this, 'registerHandler']);
+        add_action('admin_post_crops_events_unregister', [$this, 'unregisterHandler']);
+    }
 }

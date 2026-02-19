@@ -4,14 +4,19 @@ namespace CropsEvents;
 
 class RenderDatas
 {
+    private EventRegisterActions $event_register_actions;
+
+    public function __construct()
+    {
+        $this->event_register_actions = new \CropsEvents\EventRegisterActions();
+    }
+
     public function renderRemainingSeats($event_id): string
     {
-        $event_register_actions = new \CropsEvents\EventRegisterActions();
-
         $post_id = get_the_ID();
         if (! $post_id || get_post_type($post_id) !== 'event') return '';
 
-        $participants_count = $event_register_actions->count_participants($post_id);
+        $participants_count = $this->event_register_actions->count_participants($post_id);
         $capacity = get_post_meta($post_id, 'event_register_informations_event_capacity', true);
         $remaining_seats = $capacity - $participants_count;
 
@@ -23,8 +28,46 @@ class RenderDatas
 
     }
 
+    public function renderRegisterButton($event_id): string
+    {
+        $post_id = get_the_ID();
+        if (! $post_id || get_post_type($post_id) !== 'event') return '';
+
+        $output = '';
+
+        $output .= '<!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button">';
+
+        if (! is_user_logged_in()) {
+            $login_url = wp_login_url(get_permalink($post_id));
+            $output .= '<a href="' . esc_url($login_url) . '" class="wp-block-button__link wp-element-button crops-events__register-button">Se connecter pour s\'inscrire</a>';
+            $output .= '</div><!-- /wp:button --></div><!-- /wp:buttons --></div>';
+            return $output;
+        }
+        
+        if ($this->event_register_actions->is_user_registered($post_id, get_current_user_id())) {
+            $url = wp_nonce_url(
+                admin_url('admin-post.php?action=crops_events_unregister&event_id=' . $post_id),
+                'crops_events_unregister_' . $post_id
+            );
+
+            $output .= '<a href="'. esc_url($url) .'" class="wp-block-button__link wp-element-button crops-events__register-button">Me désinscrire</a>';
+            $output .= '</div><!-- /wp:button --></div><!-- /wp:buttons --></div>';
+            return $output;
+        } else {
+            $url = wp_nonce_url(
+                admin_url('admin-post.php?action=crops_events_register&event_id=' . $post_id),
+                'crops_events_register_' . $post_id
+            );
+
+            $output .= '<a href="'. esc_url($url) .'" class="wp-block-button__link wp-element-button crops-events__register-button">Je participe !</a>';
+            $output .= '</div><!-- /wp:button --></div><!-- /wp:buttons --></div>';
+            return $output;
+        }
+    }
+
     function register()
     {
         add_shortcode('crops_events_remaining_seats', [$this, 'renderRemainingSeats']);
+        add_shortcode('crops_events_register_button', [$this, 'renderRegisterButton']);
     }
 }

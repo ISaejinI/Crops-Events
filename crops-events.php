@@ -32,11 +32,13 @@ use CropsEvents\EventPostType;
 use CropsEvents\EventTaxonomy;
 use CropsEvents\EventFields;
 use CropsEvents\EventRegisterTable;
+use CropsEvents\EventRegisterActions;
 use CropsEvents\RenderDatas;
 
 (new EventPostType())->register();
 (new EventTaxonomy())->register();
 (new EventFields())->register();
+(new EventRegisterActions())->registerHandlers();
 (new RenderDatas())->register();
 
 register_activation_hook(__FILE__, function() {
