@@ -65,9 +65,21 @@ class RenderDatas
         }
     }
 
+    public function profileLink(): string
+    {
+        if (! is_user_logged_in()) {
+            return '';
+        }
+
+        $url = get_edit_profile_url(get_current_user_id());
+
+        return '<!-- wp:navigation-link {"label":"Profil","type":"page","url":"'. esc_url($url) .'","kind":"post-type"} /-->';
+    }
+
     function register()
     {
         add_shortcode('crops_events_remaining_seats', [$this, 'renderRemainingSeats']);
         add_shortcode('crops_events_register_button', [$this, 'renderRegisterButton']);
+        add_shortcode('crops_events_profile_link', [$this, 'profileLink']);
     }
 }

@@ -27,6 +27,7 @@ require_once plugin_dir_path(__FILE__) . 'inc/EventFields.php';
 require_once plugin_dir_path(__FILE__) . 'inc/EventRegisterTable.php';
 require_once plugin_dir_path(__FILE__) . 'inc/EventRegisterActions.php';
 require_once plugin_dir_path(__FILE__) . 'inc/RenderDatas.php';
+require_once plugin_dir_path(__FILE__) . 'inc/ThemeSetup.php';
 
 use CropsEvents\EventPostType;
 use CropsEvents\EventTaxonomy;
@@ -34,12 +35,14 @@ use CropsEvents\EventFields;
 use CropsEvents\EventRegisterTable;
 use CropsEvents\EventRegisterActions;
 use CropsEvents\RenderDatas;
+use CropsEvents\ThemeSetup;
 
 (new EventPostType())->register();
 (new EventTaxonomy())->register();
 (new EventFields())->register();
 (new EventRegisterActions())->registerHandlers();
 (new RenderDatas())->register();
+(new ThemeSetup())->register();
 
 register_activation_hook(__FILE__, function() {
     (new EventRegisterTable())->createTable();
