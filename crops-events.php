@@ -25,15 +25,19 @@ require_once plugin_dir_path(__FILE__) . 'inc/EventPostType.php';
 require_once plugin_dir_path(__FILE__) . 'inc/EventTaxonomy.php';
 require_once plugin_dir_path(__FILE__) . 'inc/EventFields.php';
 require_once plugin_dir_path(__FILE__) . 'inc/EventRegisterTable.php';
+require_once plugin_dir_path(__FILE__) . 'inc/EventRegisterActions.php';
+require_once plugin_dir_path(__FILE__) . 'inc/RenderDatas.php';
 
 use CropsEvents\EventPostType;
 use CropsEvents\EventTaxonomy;
 use CropsEvents\EventFields;
 use CropsEvents\EventRegisterTable;
+use CropsEvents\RenderDatas;
 
 (new EventPostType())->register();
 (new EventTaxonomy())->register();
 (new EventFields())->register();
+(new RenderDatas())->register();
 
 register_activation_hook(__FILE__, function() {
     (new EventRegisterTable())->createTable();
