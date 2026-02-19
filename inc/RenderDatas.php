@@ -35,21 +35,36 @@ class RenderDatas
 
         $output = '';
 
-        $output .= '<!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button">';
-
         if (! is_user_logged_in()) {
             $login_url = wp_login_url(get_permalink($post_id));
+            $output .= '<!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button">';
             $output .= '<a href="' . esc_url($login_url) . '" class="wp-block-button__link wp-element-button crops-events__register-button">Se connecter pour s\'inscrire</a>';
             $output .= '</div><!-- /wp:button --></div><!-- /wp:buttons --></div>';
             return $output;
         }
-        
+
+        $is_register_open = get_post_meta($post_id, 'event_register_informations_event_is_register_open', true);
+        $register_limit_date = get_post_meta($post_id, 'event_register_informations_event_register_limit_date', true);
+        $current_date = date('Y-m-d');
+        if ($is_register_open === '0' || ($register_limit_date && $current_date > $register_limit_date)) {
+            $output .= '<!-- wp:paragraph --><p>Les inscriptions sont fermées pour le moment</p><!-- /wp:paragraph -->';
+            return $output;
+        }
+
+        $capacity = get_post_meta($post_id, 'event_register_informations_event_capacity', true);
+        $participants_count = $this->event_register_actions->count_participants($post_id);
+        if ($participants_count >= $capacity) {
+            $output .= '<!-- wp:paragraph --><p>L\'événement est complet</p><!-- /wp:paragraph -->';
+            return $output;
+        }
+
         if ($this->event_register_actions->is_user_registered($post_id, get_current_user_id())) {
             $url = wp_nonce_url(
                 admin_url('admin-post.php?action=crops_events_unregister&event_id=' . $post_id),
                 'crops_events_unregister_' . $post_id
             );
 
+            $output .= '<!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button">';
             $output .= '<a href="'. esc_url($url) .'" class="wp-block-button__link wp-element-button crops-events__register-button">Me désinscrire</a>';
             $output .= '</div><!-- /wp:button --></div><!-- /wp:buttons --></div>';
             return $output;
@@ -59,6 +74,7 @@ class RenderDatas
                 'crops_events_register_' . $post_id
             );
 
+            $output .= '<!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button">';
             $output .= '<a href="'. esc_url($url) .'" class="wp-block-button__link wp-element-button crops-events__register-button">Je participe !</a>';
             $output .= '</div><!-- /wp:button --></div><!-- /wp:buttons --></div>';
             return $output;
