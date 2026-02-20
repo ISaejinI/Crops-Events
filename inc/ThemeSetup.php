@@ -107,11 +107,104 @@ class ThemeSetup
 
     }
 
+    public function addEventParticipantLink(array $actions, \WP_Post $post)
+    {
+        if ($post->post_type !== 'event') {
+            return $actions;
+        }
+
+        if (! current_user_can('edit_posts')) {
+            return $actions;
+        }
+
+        $url = add_query_arg(
+            [
+                'page'     => 'crops-events-participants',
+                'event_id' => $post->ID,
+            ],
+            admin_url('admin.php')
+        );
+
+        $url = wp_nonce_url($url, 'crops_events_view_participants_' . $post->ID);
+
+        $actions['crops_events_participants'] =
+            '<a href="' . esc_url($url) . '">' . esc_html__('Voir les participants', 'crops-events') . '</a>';
+
+        return $actions;
+    }
+
+    public function addEventParticipantsPage()
+    {
+        add_submenu_page(
+            null,
+            __('Participants', 'crops-events'),
+            __('Participants', 'crops-events'),
+            'edit_posts',
+            'crops-events-participants',
+            [$this, 'addEventParticipantsPageCallback']
+        );
+    }
+
+    public function addEventParticipantsPageCallback()
+    {
+        if (! current_user_can('edit_posts')) {
+            wp_die(__('Accès refusé.', 'crops-events'));
+        }
+
+        $event_id = isset($_GET['event_id']) ? (int) $_GET['event_id'] : 0;
+        if (! $event_id || get_post_type($event_id) !== 'event') {
+            wp_die(__('Événement invalide.', 'crops-events'));
+        }
+
+        check_admin_referer('crops_events_view_participants_' . $event_id);
+
+        $actions = new \CropsEvents\EventRegisterActions();
+        $user_ids = $actions->get_registered_users($event_id);
+
+        echo '<div class="wrap">';
+        echo '<h1>' . esc_html(get_the_title($event_id)) . ' — ' . esc_html__('Participants', 'crops-events') . '</h1>';
+
+        echo '<p><a href="' . esc_url(admin_url('edit.php?post_type=event')) . '">← ' . esc_html__('Retour aux événements', 'crops-events') . '</a></p>';
+
+        if (empty($user_ids)) {
+            echo '<p>' . esc_html__('Aucun participant pour le moment.', 'crops-events') . '</p>';
+            echo '</div>';
+            return;
+        }
+
+        echo '<table class="widefat fixed striped">';
+        echo '<thead><tr>';
+        echo '<th>' . esc_html__('Nom', 'crops-events') . '</th>';
+        echo '<th>' . esc_html__('Email', 'crops-events') . '</th>';
+        echo '<th>' . esc_html__('Profil', 'crops-events') . '</th>';
+        echo '</tr></thead><tbody>';
+
+        foreach ($user_ids as $user_id) {
+            $user = get_user_by('id', (int) $user_id);
+            if (! $user) {
+                continue;
+            }
+
+            $profile_url = get_edit_user_link($user->ID);
+
+            echo '<tr>';
+            echo '<td>' . esc_html($user->display_name) . '</td>';
+            echo '<td>' . esc_html($user->user_email) . '</td>';
+            echo '<td><a href="' . esc_url($profile_url) . '">' . esc_html__('Voir le profil', 'crops-events') . '</a></td>';
+            echo '</tr>';
+        }
+
+        echo '</tbody></table>';
+        echo '</div>';
+    }
+
     public function register()
     {
         add_action('after_setup_theme', [$this, 'hideToolBarForSubscribers']);
         add_action('after_setup_theme', [$this, 'hideBoardForSubscribers']);
         add_action('after_setup_theme', [$this, 'addBackHomeForSubscribers']);
         add_action('after_setup_theme', [$this, 'addUserEventsPage']);
+        add_filter('post_row_actions', [$this, 'addEventParticipantLink'], 10, 2);
+        add_action('admin_menu', [$this, 'addEventParticipantsPage']);
     }
 }
