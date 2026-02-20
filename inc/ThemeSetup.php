@@ -198,6 +198,24 @@ class ThemeSetup
         echo '</div>';
     }
 
+    public function addEventParticipantCount(array $actions, \WP_Post $post)
+    {
+        if ($post->post_type !== 'event') {
+            return $actions;
+        }
+
+        if (! current_user_can('edit_posts')) {
+            return $actions;
+        }
+
+        $participant_count = count($this->event_register_actions->get_registered_users($post->ID));
+        $max_participants = (int) get_post_meta($post->ID, 'event_register_informations_event_capacity', true);
+
+        $actions['crops_events_participant_count'] = '<span style="color: #666;">' . esc_html($participant_count) . '/' . esc_html($max_participants) . ' ' . esc_html__('participants', 'crops-events') . '</span>';
+
+        return $actions;
+    }
+
     public function register()
     {
         add_action('after_setup_theme', [$this, 'hideToolBarForSubscribers']);
@@ -206,5 +224,6 @@ class ThemeSetup
         add_action('after_setup_theme', [$this, 'addUserEventsPage']);
         add_filter('post_row_actions', [$this, 'addEventParticipantLink'], 10, 2);
         add_action('admin_menu', [$this, 'addEventParticipantsPage']);
+        add_filter('post_row_actions', [$this, 'addEventParticipantCount'], 10, 2);
     }
 }
