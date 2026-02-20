@@ -21,7 +21,7 @@ class RenderDatas
         $remaining_seats = $capacity - $participants_count;
 
         if ($remaining_seats <= 0) {
-            return '<p class="crops-events__seats crops-events__seats--full">Complet</p>';
+            return '<!-- wp:paragraph --><p class="crops-events__seats crops-events__seats--full">Complet</p><!-- /wp:paragraph -->';
         }
 
         return '<p class="crops-events__seats">' . esc_html($remaining_seats) . ' place' . ($remaining_seats > 1 ? 's' : '') . ' restante' . ($remaining_seats > 1 ? 's' : '') . '</p>';
